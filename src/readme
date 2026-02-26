@@ -1,0 +1,279 @@
+# QDBX Client
+
+## Overview
+QDBX Client is a customer-facing web application designed for NFG clients seeking loans. It provides a comprehensive portal for loan applications, offer comparisons, real-time chat support, and application management through an intuitive interface.
+
+## Key Features
+- Multi-step loan application process
+- Real-time bank offer comparison
+- Interactive chat system with WebSocket support
+- Company profile and document management
+- Offer letter generation and management
+- Credit report upload and processing
+- Multi-language support (English/Arabic)
+- Responsive design for desktop and mobile
+
+## Environment URLs
+- Development: http://localhost:3000 (local development)
+- Production: Deployed via Docker on port 3002
+
+## Project Structure
+```
+src/
+├── api/                # HTTP client configuration
+├── apis/               # OpenAPI clients and adapters
+│   └── ald-services/   # Main backend API integration
+├── app/                # Next.js App Router structure
+│   └── [locale]/       # Internationalized routes
+│       ├── (private)/  # Authenticated routes
+│       └── (public)/   # Public routes
+├── components/         # Reusable UI components
+├── constants/          # Application constants and endpoints
+├── context/            # React Context providers
+├── generated/          # Auto-generated TypeScript definitions
+├── hooks/              # Custom React hooks
+├── layouts/            # Layout components
+│   ├── AppLayout/      # Basic application wrapper
+│   ├── DashboardLayout/# Complex dashboard layout
+│   └── StepperLayout/  # Multi-step form layout
+├── messages/           # Internationalization messages
+├── page/               # Feature-based page components
+│   ├── Chat/           # Real-time messaging system
+│   ├── NewRequest/     # Loan application flow
+│   ├── CompareBanks/   # Bank comparison functionality
+│   ├── RequestOfferDetail/# Detailed offer management
+│   ├── company/        # Company-specific features
+│   └── OLD_*/          # Legacy features (being migrated)
+├── redux/              # Redux store (chat functionality)
+├── theme/              # Design system configuration
+├── types/              # Global TypeScript definitions
+├── utils/              # Utility functions
+└── wrappers/           # Layout wrapper components
+```
+
+## Technologies
+- **Next.js 14** with App Router architecture
+- **React 18** with TypeScript
+- **Ant Design 5** (UI Components)
+- **Tailwind CSS** (Utility-first styling)
+- **Auth0** (Authentication)
+- **openapi-fetch** (API client with auto-generated types)
+- **Recharts** (Data visualization)
+- **Redux Toolkit** (State management for chat)
+- **WebSocket** (Real-time communication)
+- **Vitest** (Testing framework)
+- **next-intl** (Internationalization)
+
+## TypeScript Conventions
+- **Interfaces**: Use "I" prefix (e.g., `IUserData`, `IOffer`, `IApplicationDetails`)
+- **Enums**: Use "E" prefix (e.g., `EStatus`, `EUserRoles`, `EFileTypes`)
+- **Types**: Use "T" prefix (e.g., `TLocale`, `TOffersQueryParams`)
+- **Path Aliases**: Use configured aliases for imports:
+  - `@/*` → `src/*`
+  - `@/components/*` → `src/components/*`
+  - `@/types/*` → `src/types/*`
+  - `@/utils/*` → `src/utils/*`
+  - `@/generated/*` → `src/generated/*`
+
+## API Integration
+The application uses an **OpenAPI-first approach** with auto-generated TypeScript definitions:
+
+### OpenAPI Workflow
+1. Update `ald-services.json` with latest API specification
+2. Generate TypeScript definitions: `npm run gen:sdk:ald-services`
+3. Use type-safe `AldServicesClient` for API calls
+4. Transform responses using adapter pattern
+
+### Example Usage
+```typescript
+import { AldServicesClient } from "@/apis/ald-services";
+
+const client = new AldServicesClient(config)
+  .setAccessToken(token)
+  .setCrmCompanyId(companyId);
+
+const applications = await client.nfgApps().search({
+  status: "SUBMITTED",
+  limit: 10
+});
+```
+
+## State Management Architecture
+The application uses a **hybrid state management approach**:
+
+- **Redux Toolkit**: Chat functionality and WebSocket messages
+- **React Context**: Feature-specific state (proposals, dashboard, company data)
+- **Local State**: Component-specific state management
+
+## Development
+
+### Prerequisites
+- Node.js 22.x (recommended to use NVM)
+- npm 11.x or higher
+
+### Installation
+```bash
+npm install
+```
+
+### Configuration
+The application uses runtime configuration via JSON files in the `public/` directory:
+
+- `config.json` - Production configuration
+- `config-dev.json` - Development configuration  
+- `config-test.json` - Testing configuration
+
+### Running Locally
+```bash
+npm run dev
+```
+Runs the application on [http://localhost:3000](http://localhost:3000)
+
+### API Schema Generation
+```bash
+# Generate TypeScript definitions from OpenAPI spec
+npm run gen:sdk:ald-services
+```
+This generates `src/generated/ald-services.d.ts` from the `ald-services.json` specification.
+
+### Building for Production
+```bash
+npm run build
+```
+
+### Running Production Build
+```bash
+npm run start
+```
+
+### Code Quality
+```bash
+# Run ESLint
+npm run lint
+
+# TypeScript type checking
+npm run tsc
+
+# Run tests with Vitest
+npm run test
+
+# Run tests with UI
+npm run test-ui
+```
+
+## Feature Overview
+
+### Active Features
+- **Chat**: Real-time messaging with WebSocket integration
+- **NewRequest**: Multi-step loan application process (30+ components)
+- **CompareBanks**: Bank offer comparison functionality
+- **RequestOfferDetail**: Detailed offer management and review
+- **OffersLetter**: Offer letter generation and management
+- **Company**: Company-specific functionality and data management
+
+### Legacy Features (OLD_*)
+Features prefixed with `OLD_` are being migrated to new implementations:
+- `OLD_PublicOffers/` → `PublicOffers/`
+- `OLD_RequestDetail/` → `RequestOfferDetail/`
+- `OLD_financing/` → `financing/`
+- `OLD_loan/` → Integrated into `NewRequest/`
+
+## Authentication & Authorization
+- **Auth0** integration for user authentication
+- **Role-based access control** with different user types
+- **JWT token management** with automatic refresh
+- **Protected routes** with authentication guards
+- **Company selection** and multi-tenancy support
+
+## Internationalization
+- **English/Arabic** language support via next-intl
+- **RTL/LTR** layout support
+- **Locale-based routing** with `[locale]` dynamic segments
+- **Message files** in `src/messages/` directory
+
+## Testing
+- **Vitest** with React Testing Library
+- **jsdom** environment for DOM simulation
+- **Coverage reporting** with @vitest/coverage-v8
+- **Component testing** patterns with user interaction testing
+
+Example test structure:
+```bash
+npm run test        # Run all tests
+npm run test-ui     # Run tests with interactive UI
+```
+
+## Docker Configuration
+
+### Local Development
+Build and run using Docker:
+
+```bash
+# Build the Docker image
+docker build -t qdbx-client .
+
+# Run container (external port 3002 → internal 3000)
+docker run -p 3002:3000 qdbx-client
+```
+
+Open [http://localhost:3002](http://localhost:3002)
+
+### Docker Notes
+- **Development**: Runs on port 3000 internally
+- **Production**: External access via port 3002
+- For Azure Container Registry, update Dockerfile base image from `FROM node:21-alpine` to `FROM acrqcparoprod01.azurecr.io/node:21-alpine`
+
+## Environment Configuration
+
+### Development Setup
+1. Copy environment configuration:
+   ```bash
+   cp public/config-dev.json public/config.json
+   ```
+
+2. Update configuration values as needed for your environment
+
+3. Ensure API endpoints and Auth0 settings match your target environment
+
+### Configuration Structure
+```json
+{
+  "NEXT_PUBLIC_API_URL": "https://api-dev-ald-services.qdb.qa",
+  "NEXT_AUTH0_DOMAIN": "your-auth0-domain",
+  "NEXT_AUTH0_CLIENT_ID": "your-client-id",
+  "NEXT_AUTH0_AUDIENCE": "your-api-audience",
+  "COMMS_SERVICE_WEBSOCKET_URL": "wss://your-websocket-url",
+  "INTEGRATION_TYPE": "nfg"
+}
+```
+
+## Code Quality Tools
+
+### ESLint & Prettier
+- **ESLint**: Code linting with Next.js configuration
+- **Prettier**: Code formatting with import organization
+- **Import organization**: Automatic sorting with prettier-plugin-organize-imports
+- **Tailwind CSS**: Class sorting with prettier-plugin-tailwindcss
+
+### Pre-commit Hooks
+The project uses Husky for automated quality checks:
+- Code formatting with Prettier
+- Linting with ESLint
+- TypeScript type checking
+- Automated import organization
+
+## Security Considerations
+- Environment variables are never exposed in client code
+- Authentication tokens are managed securely
+- Input validation and sanitization
+- HTTPS enforcement in production
+- Secure WebSocket connections for real-time features
+
+## Performance Features
+- **Code splitting** with Next.js dynamic imports
+- **Image optimization** with Next.js Image component
+- **Bundle analysis** and optimization
+- **Memoization** for expensive operations
+- **Efficient state management** with selective updates
+
+This application provides a comprehensive loan application experience for NFG clients, with robust architecture and modern development practices.
